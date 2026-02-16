@@ -20,58 +20,106 @@ export default function LoginPage() {
     setLoading(true);
     
     setTimeout(() => {
-      // Determine role based on email prefix OR selected role for signup
       let userRole: 'guide' | 'student' = 'student';
       
       if (!isLogin) {
-        // Signup - use selected role
         userRole = role;
       } else {
-        // Login - check email prefix
-        if (email.toLowerCase().startsWith('guide') || 
-            email.toLowerCase().includes('professor') || 
-            email.toLowerCase().includes('teacher')) {
+        if (email.toLowerCase().startsWith('guide') || email.toLowerCase().includes('professor')) {
           userRole = 'guide';
         } else {
           userRole = 'student';
         }
       }
       
-      const userId = isLogin ? email.split('@')[0] : `user_${Date.now()}`;
-      login(userId, 'password', userRole);
+      login(email, password, userRole);
       router.push(userRole === 'guide' ? '/dashboard/guide' : '/dashboard/student');
       setLoading(false);
     }, 1000);
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-indigo-950 via-purple-900 to-slate-900 flex items-center justify-center p-4">
-      <div className="w-full max-w-md">
-        <div className="text-center mb-8">
-          <div className="inline-flex items-center gap-3 bg-white/10 backdrop-blur-xl px-6 py-3 rounded-2xl border border-white/20">
-            <div className="w-10 h-10 bg-gradient-to-br from-indigo-400 to-purple-400 rounded-xl flex items-center justify-center">
-              <Code className="w-5 h-5 text-white" />
+    <div style={{
+      minHeight: '100vh',
+      background: '#0a0a0a',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      padding: '1rem'
+    }}>
+      <div style={{ maxWidth: '400px', width: '100%' }}>
+        <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
+          <div style={{
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: '0.75rem',
+            padding: '0.75rem 1.5rem',
+            background: 'rgba(255,255,255,0.02)',
+            border: '1px solid rgba(255,222,34,0.2)',
+            borderRadius: '2rem'
+          }}>
+            <div style={{
+              width: '40px',
+              height: '40px',
+              background: 'linear-gradient(135deg, #ffde22, #ff8928)',
+              borderRadius: '0.75rem',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center'
+            }}>
+              <Code style={{ width: '20px', height: '20px', color: '#000' }} />
             </div>
-            <span className="text-xl font-bold text-white">DevAI</span>
+            <span style={{
+              fontSize: '1.5rem',
+              fontWeight: 'bold',
+              background: 'linear-gradient(135deg, #ffde22, #ff8928, #ff414e)',
+              WebkitBackgroundClip: 'text',
+              WebkitTextFillColor: 'transparent'
+            }}>
+              DevAI
+            </span>
           </div>
         </div>
 
-        <div className="backdrop-blur-xl bg-white/10 rounded-3xl border border-white/20 p-8">
-          <h2 className="text-2xl font-bold text-white mb-2 text-center">
+        <div style={{
+          background: 'rgba(255,255,255,0.02)',
+          border: '1px solid rgba(255,222,34,0.1)',
+          borderRadius: '1.5rem',
+          padding: '2rem'
+        }}>
+          <h2 style={{
+            fontSize: '1.5rem',
+            fontWeight: 'bold',
+            textAlign: 'center',
+            marginBottom: '0.5rem'
+          }}>
             {isLogin ? 'Welcome back' : 'Create account'}
           </h2>
           
           {!isLogin && (
-            <div className="flex gap-2 p-1 bg-black/20 rounded-2xl mb-6">
+            <div style={{
+              display: 'flex',
+              gap: '0.5rem',
+              padding: '0.25rem',
+              background: 'rgba(0,0,0,0.3)',
+              borderRadius: '2rem',
+              marginBottom: '1.5rem'
+            }}>
               {(['student', 'guide'] as const).map((r) => (
                 <button
                   key={r}
                   onClick={() => setRole(r)}
-                  className={`flex-1 py-2 px-4 rounded-xl font-medium capitalize transition-all ${
-                    role === r 
-                      ? 'bg-gradient-to-r from-indigo-500 to-purple-500 text-white shadow-lg' 
-                      : 'text-indigo-200/60 hover:text-white hover:bg-white/5'
-                  }`}
+                  style={{
+                    flex: 1,
+                    padding: '0.5rem',
+                    borderRadius: '2rem',
+                    border: 'none',
+                    background: role === r ? 'linear-gradient(135deg, #ffde22, #ff8928)' : 'transparent',
+                    color: role === r ? '#000' : 'rgba(255,255,255,0.6)',
+                    fontWeight: '600',
+                    cursor: 'pointer',
+                    textTransform: 'capitalize'
+                  }}
                 >
                   {r}
                 </button>
@@ -79,78 +127,160 @@ export default function LoginPage() {
             </div>
           )}
 
-          <form onSubmit={handleSubmit} className="space-y-4">
+          <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
             {!isLogin && (
-              <div>
-                <div className="relative">
-                  <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-indigo-300/60" />
-                  <input
-                    type="text"
-                    value={name}
-                    onChange={(e) => setName(e.target.value)}
-                    className="w-full pl-10 pr-4 py-3 bg-black/20 border border-white/10 rounded-xl text-white placeholder-indigo-300/40 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                    placeholder="John Doe"
-                    required={!isLogin}
-                  />
-                </div>
+              <div style={{ position: 'relative' }}>
+                <User style={{
+                  position: 'absolute',
+                  left: '1rem',
+                  top: '50%',
+                  transform: 'translateY(-50%)',
+                  width: '1.25rem',
+                  height: '1.25rem',
+                  color: 'rgba(255,222,34,0.6)'
+                }} />
+                <input
+                  type="text"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  style={{
+                    width: '100%',
+                    padding: '0.75rem 1rem 0.75rem 3rem',
+                    background: 'rgba(255,255,255,0.03)',
+                    border: '1px solid rgba(255,222,34,0.2)',
+                    borderRadius: '0.75rem',
+                    color: '#fff',
+                    fontSize: '0.95rem'
+                  }}
+                  placeholder="Full name"
+                  required
+                />
               </div>
             )}
             
-            <div>
-              <div className="relative">
-                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-indigo-300/60" />
-                <input
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  className="w-full pl-10 pr-4 py-3 bg-black/20 border border-white/10 rounded-xl text-white placeholder-indigo-300/40 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                  placeholder="you@example.com"
-                  required
-                />
-              </div>
+            <div style={{ position: 'relative' }}>
+              <Mail style={{
+                position: 'absolute',
+                left: '1rem',
+                top: '50%',
+                transform: 'translateY(-50%)',
+                width: '1.25rem',
+                height: '1.25rem',
+                color: 'rgba(255,222,34,0.6)'
+              }} />
+              <input
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                style={{
+                  width: '100%',
+                  padding: '0.75rem 1rem 0.75rem 3rem',
+                  background: 'rgba(255,255,255,0.03)',
+                  border: '1px solid rgba(255,222,34,0.2)',
+                  borderRadius: '0.75rem',
+                  color: '#fff',
+                  fontSize: '0.95rem'
+                }}
+                placeholder="Email address"
+                required
+              />
             </div>
             
-            <div>
-              <div className="relative">
-                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-indigo-300/60" />
-                <input
-                  type="password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  className="w-full pl-10 pr-4 py-3 bg-black/20 border border-white/10 rounded-xl text-white placeholder-indigo-300/40 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                  placeholder="••••••••"
-                  required
-                />
-              </div>
+            <div style={{ position: 'relative' }}>
+              <Lock style={{
+                position: 'absolute',
+                left: '1rem',
+                top: '50%',
+                transform: 'translateY(-50%)',
+                width: '1.25rem',
+                height: '1.25rem',
+                color: 'rgba(255,222,34,0.6)'
+              }} />
+              <input
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                style={{
+                  width: '100%',
+                  padding: '0.75rem 1rem 0.75rem 3rem',
+                  background: 'rgba(255,255,255,0.03)',
+                  border: '1px solid rgba(255,222,34,0.2)',
+                  borderRadius: '0.75rem',
+                  color: '#fff',
+                  fontSize: '0.95rem'
+                }}
+                placeholder="Password"
+                required
+              />
             </div>
             
             <button
               type="submit"
               disabled={loading}
-              className="w-full py-3 bg-gradient-to-r from-indigo-500 to-purple-500 text-white rounded-xl font-medium hover:shadow-lg hover:shadow-purple-500/25 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+              style={{
+                width: '100%',
+                padding: '0.75rem',
+                background: 'linear-gradient(135deg, #ffde22, #ff8928)',
+                color: '#000',
+                border: 'none',
+                borderRadius: '0.75rem',
+                fontWeight: '600',
+                fontSize: '1rem',
+                cursor: loading ? 'not-allowed' : 'pointer',
+                opacity: loading ? 0.7 : 1,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '0.5rem',
+                marginTop: '1rem'
+              }}
             >
               {loading ? (
-                <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                <div style={{
+                  width: '1.25rem',
+                  height: '1.25rem',
+                  border: '2px solid rgba(0,0,0,0.3)',
+                  borderTopColor: '#000',
+                  borderRadius: '50%',
+                  animation: 'spin 1s linear infinite'
+                }} />
               ) : (
                 <>
                   {isLogin ? 'Sign In' : 'Create Account'}
-                  <ArrowRight className="w-4 h-4" />
+                  <ArrowRight style={{ width: '1.25rem', height: '1.25rem' }} />
                 </>
               )}
             </button>
           </form>
 
-          <p className="mt-6 text-center text-sm text-indigo-200/60">
+          <p style={{
+            textAlign: 'center',
+            marginTop: '1.5rem',
+            color: 'rgba(255,255,255,0.6)',
+            fontSize: '0.9rem'
+          }}>
             {isLogin ? "Don't have an account? " : "Already have an account? "}
             <button
               onClick={() => setIsLogin(!isLogin)}
-              className="text-white font-medium hover:text-indigo-200 transition-colors"
+              style={{
+                background: 'none',
+                border: 'none',
+                color: '#ffde22',
+                fontWeight: '600',
+                cursor: 'pointer'
+              }}
             >
               {isLogin ? 'Sign up' : 'Sign in'}
             </button>
           </p>
         </div>
       </div>
+
+      <style jsx>{`
+        @keyframes spin {
+          to { transform: rotate(360deg); }
+        }
+      `}</style>
     </div>
   );
 }

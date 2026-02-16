@@ -1,3 +1,116 @@
+@import url('https://api.fontshare.com/v2/css?f[]=satoshi@900,700,500&f[]=general-sans@400,500,600&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+:root {
+  --primary-yellow: #ffde22;
+  --primary-red: #ff414e;
+  --primary-orange: #ff8928;
+  --pure-white: #ffffff;
+  --dark-bg: #0a0a0a;
+  --card-bg: rgba(255, 255, 255, 0.03);
+  --card-bg-hover: rgba(255, 255, 255, 0.06);
+  --glass-border: rgba(255, 255, 255, 0.05);
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background-color: #0a0a0a !important;
+  color: #ffffff !important;
+  font-family: 'General Sans', sans-serif;
+  min-height: 100vh;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: 'Satoshi', sans-serif;
+  font-weight: 700;
+  color: #ffffff !important;
+}
+
+/* Navbar Styles */
+nav, header {
+  background-color: rgba(10, 10, 10, 0.8) !important;
+  backdrop-filter: blur(10px);
+  border-bottom: 1px solid rgba(255, 222, 34, 0.1) !important;
+}
+
+/* Glass Card Effect */
+.glass-card {
+  background: rgba(255, 255, 255, 0.02) !important;
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 222, 34, 0.1) !important;
+  border-radius: 1rem;
+  transition: all 0.3s ease;
+}
+
+.glass-card:hover {
+  background: rgba(255, 222, 34, 0.05) !important;
+  border-color: rgba(255, 222, 34, 0.3) !important;
+  box-shadow: 0 10px 30px -15px rgba(255, 222, 34, 0.2);
+}
+
+/* Buttons */
+.btn-primary {
+  background: linear-gradient(135deg, #ffde22, #ff8928) !important;
+  color: #000000 !important;
+  font-weight: 600;
+  padding: 0.75rem 1.5rem;
+  border-radius: 0.75rem;
+  border: none;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.btn-primary:hover {
+  transform: scale(1.05);
+  box-shadow: 0 20px 40px -15px #ffde22;
+}
+
+.btn-secondary {
+  background: transparent;
+  color: #ffffff;
+  border: 1px solid rgba(255, 222, 34, 0.3);
+  padding: 0.75rem 1.5rem;
+  border-radius: 0.75rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.btn-secondary:hover {
+  border-color: #ffde22;
+  background: rgba(255, 222, 34, 0.1);
+}
+
+/* Gradient Text */
+.gradient-text {
+  background: linear-gradient(135deg, #ffde22, #ff8928, #ff414e) !important;
+  -webkit-background-clip: text !important;
+  -webkit-text-fill-color: transparent !important;
+  background-clip: text !important;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: #1a1a1a;
+}
+
+::-webkit-scrollbar-thumb {
+  background: linear-gradient(135deg, #ffde22, #ff414e);
+  border-radius: 3px;
+}

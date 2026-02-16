@@ -1,7 +1,6 @@
 'use client';
 
 import { useEffect } from 'react';
-import { Brain, ArrowRight } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
 import GuideDashboard from '@/components/GuideDashboard';
@@ -20,8 +19,21 @@ export default function GuideDashboardPage() {
 
   if (!user || !isGuide) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="w-8 h-8 border-4 border-indigo-200 border-t-indigo-600 rounded-full animate-spin"></div>
+      <div style={{ 
+        minHeight: '100vh', 
+        backgroundColor: '#0a0a0a',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center'
+      }}>
+        <div style={{
+          width: '40px',
+          height: '40px',
+          border: '3px solid rgba(255,222,34,0.3)',
+          borderTopColor: '#ffde22',
+          borderRadius: '50%',
+          animation: 'spin 1s linear infinite'
+        }} />
       </div>
     );
   }

@@ -1,19 +1,21 @@
 'use client';
 
-import { createContext, useContext, useState, ReactNode } from 'react';
+import { createContext, useContext, useState, ReactNode, useEffect } from 'react';
 
 interface User {
   id: string;
   name: string;
-  role: 'guide' | 'student';
+  role: 'guide' | 'student' | 'teamleader';
   email: string;
 }
 
 interface AuthContextType {
   user: User | null;
-  login: (id: string, password: string) => Promise<void>;
+  login: (email: string, password: string, role?: 'guide' | 'student') => Promise<void>;
   logout: () => void;
   isGuide: boolean;
+  isStudent: boolean;
+  isTeamLeader: boolean;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -21,27 +23,35 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
 
-  const login = async (id: string, password: string, role?: 'guide' | 'student') => {
-  // Mock authentication with explicit role
-  let userRole: 'guide' | 'student';
-  
-  if (role) {
-    userRole = role; // Use provided role (for signup)
-  } else {
-    // Determine from email prefix (for login)
-    userRole = id.toLowerCase().startsWith('guide') ? 'guide' : 'student';
-  }
-  
-  const userData: User = {
-    id,
-    name: userRole === 'guide' 
-      ? `Guide ${id.split('@')[0].replace('guide', '').replace(/[^a-zA-Z]/g, '') || 'Smith'}` 
-      : `Student ${id.split('@')[0].replace(/[^a-zA-Z]/g, '') || 'User'}`,
-    role: userRole,
-    email: id
-  };
+  useEffect(() => {
+    // Check for saved user in localStorage
+    const savedUser = localStorage.getItem('devai_user');
+    if (savedUser) {
+      setUser(JSON.parse(savedUser));
+    }
+  }, []);
+
+  const login = async (email: string, password: string, role?: 'guide' | 'student') => {
+    // Mock authentication
+    let userRole: 'guide' | 'student' | 'teamleader' = 'student';
     
-    // In production, verify with backend
+    if (role) {
+      userRole = role;
+    } else if (email.toLowerCase().includes('guide') || email.toLowerCase().includes('professor')) {
+      userRole = 'guide';
+    } else if (email.toLowerCase().includes('leader')) {
+      userRole = 'teamleader';
+    } else {
+      userRole = 'student';
+    }
+    
+    const userData: User = {
+      id: email.split('@')[0],
+      name: email.split('@')[0].split('.').map(n => n.charAt(0).toUpperCase() + n.slice(1)).join(' '),
+      role: userRole,
+      email: email
+    };
+    
     setUser(userData);
     localStorage.setItem('devai_user', JSON.stringify(userData));
   };
@@ -52,7 +62,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   return (
-    <AuthContext.Provider value={{ user, login, logout, isGuide: user?.role === 'guide' }}>
+    <AuthContext.Provider value={{ 
+      user, 
+      login, 
+      logout, 
+      isGuide: user?.role === 'guide',
+      isStudent: user?.role === 'student',
+      isTeamLeader: user?.role === 'teamleader'
+    }}>
       {children}
     </AuthContext.Provider>
   );

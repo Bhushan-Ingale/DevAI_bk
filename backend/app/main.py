@@ -1,26 +1,12 @@
-import sys
-import os
-
-# Add the backend directory to Python path
-sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-
-# Now this will work
-from services.git_analyzer import GitAnalyzer
-from fastapi import FastAPI, HTTPException, Depends, status
+from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
-from pydantic import BaseModel
-from typing import List, Optional
 from datetime import datetime
-import os
+import random
+from typing import Optional
 
-from services.git_analyzer import GitAnalyzer
-#from models.user import User, UserRole
-#from models.group import Group, Member
+app = FastAPI(title="DevAI API", version="1.0.0")
 
-app = FastAPI(title="DevAI Analytics API", version="1.0.0")
-
-# CORS
+# CORS for frontend
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["http://localhost:3000"],
@@ -29,165 +15,144 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Security
-security = HTTPBearer()
+# Mock database
+teams_db = {
+    "1": {
+        "id": "1",
+        "name": "Team Quantum",
+        "members": ["Alice Chen", "Bob Smith", "Charlie Brown"],
+        "leader": "Alice Chen",
+        "repo_url": "https://github.com/team/quantum",
+        "created_at": "2024-01-15T10:00:00Z"
+    },
+    "2": {
+        "id": "2",
+        "name": "Team Nebula",
+        "members": ["Diana Prince", "Eve Torres", "Frank Castle"],
+        "leader": "Diana Prince",
+        "repo_url": "https://github.com/team/nebula",
+        "created_at": "2024-01-20T14:30:00Z"
+    },
+    "3": {
+        "id": "3",
+        "name": "Team Phoenix",
+        "members": ["Grace Hopper", "Henry Ford", "Ivy Chen"],
+        "leader": "Grace Hopper",
+        "repo_url": "https://github.com/team/phoenix",
+        "created_at": "2024-02-01T09:15:00Z"
+    }
+}
 
-# Mock DB (replace with MongoDB)
-groups_db = {}
-users_db = {}
+tasks_db = []
+calendar_events_db = []
 
-# Models
-class GroupCreate(BaseModel):
-    name: str
-    repo_url: str
-    members: List[str]
-    guide_id: str
-
-class CommentCreate(BaseModel):
-    content: str
-    member_name: str
-
-# Routes
 @app.get("/")
 async def root():
-    return {"message": "DevAI Analytics API", "status": "running"}
+    return {"message": "DevAI API", "status": "running"}
 
 @app.get("/health")
 async def health():
     return {"status": "healthy", "timestamp": datetime.now().isoformat()}
 
-@app.post("/groups")
-async def create_group(group: GroupCreate):
-    """Create a new student group"""
-    group_id = f"group_{len(groups_db) + 1}"
-    groups_db[group_id] = {
-        "id": group_id,
-        **group.dict(),
-        "created_at": datetime.now().isoformat(),
-        "progress": 0,
-        "last_analyzed": None
-    }
-    return {"id": group_id, "message": "Group created successfully"}
+# Team endpoints
+@app.get("/api/teams")
+async def get_teams():
+    """Get all teams"""
+    return list(teams_db.values())
 
-@app.get("/groups")
-async def get_groups(guide_id: Optional[str] = None):
-    """Get all groups or groups for specific guide"""
-    if guide_id:
-        groups = [g for g in groups_db.values() if g["guide_id"] == guide_id]
-    else:
-        groups = list(groups_db.values())
-    
-    # Add analysis if available
-    for group in groups:
-        if group.get("repo_url"):
-            try:
-                analyzer = GitAnalyzer(group["repo_url"])
-                group["stats"] = analyzer.get_dashboard_data()["summary"]
-                group["last_analyzed"] = datetime.now().isoformat()
-            except:
-                group["stats"] = {"total_commits": 0, "total_contributors": 0}
-    
-    return groups
+@app.get("/api/teams/{team_id}")
+async def get_team(team_id: str):
+    """Get specific team"""
+    if team_id not in teams_db:
+        raise HTTPException(status_code=404, detail="Team not found")
+    return teams_db[team_id]
 
-@app.get("/groups/{group_id}/analytics")
-async def get_group_analytics(group_id: str):
-    """Get detailed analytics for a group"""
-    if group_id not in groups_db:
-        raise HTTPException(status_code=404, detail="Group not found")
-    
-    group = groups_db[group_id]
-    if not group.get("repo_url"):
-        return {"message": "No repository linked", "stats": {}}
-    
-    try:
-        analyzer = GitAnalyzer(group["repo_url"])
-        return analyzer.get_dashboard_data()
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Analysis failed: {str(e)}")
+@app.post("/api/teams")
+async def create_team(team: dict):
+    """Create new team"""
+    team_id = f"team_{len(teams_db) + 1}"
+    team["id"] = team_id
+    team["created_at"] = datetime.now().isoformat()
+    teams_db[team_id] = team
+    return {"id": team_id, "message": "Team created successfully"}
 
-@app.post("/groups/{group_id}/comments")
-async def add_comment(group_id: str, comment: CommentCreate):
-    """Add comment to a group member's work"""
-    if group_id not in groups_db:
-        raise HTTPException(status_code=404, detail="Group not found")
+# Analytics endpoints
+@app.get("/api/teams/{team_id}/analytics")
+async def get_team_analytics(team_id: str):
+    """Get team analytics with mock data"""
+    if team_id not in teams_db:
+        raise HTTPException(status_code=404, detail="Team not found")
     
-    # In production, save to DB
-    return {
-        "message": "Comment added",
-        "comment": comment.dict(),
-        "timestamp": datetime.now().isoformat()
-    }
-
-@app.get("/analytics/demo")
-async def demo_analytics():
-    """Demo endpoint with sample data"""
+    team = teams_db[team_id]
+    
+    # Generate mock analytics
     return {
         "summary": {
-            "total_commits": 142,
-            "total_contributors": 4,
-            "total_files": 56,
-            "repo_size_mb": 4.2,
-            "active_days": 45
+            "total_commits": random.randint(50, 200),
+            "total_contributors": len(team["members"]),
+            "total_additions": random.randint(500, 3000),
+            "total_deletions": random.randint(100, 1000),
+            "active_days": random.randint(15, 30)
         },
         "contributors": [
-            {"name": "Alice", "progress": 85, "commits": 65, "additions": 1240, "deletions": 320, "activity_score": 98},
-            {"name": "Bob", "progress": 72, "commits": 42, "additions": 890, "deletions": 210, "activity_score": 76},
-            {"name": "Charlie", "progress": 45, "commits": 25, "additions": 450, "deletions": 120, "activity_score": 52},
-            {"name": "Diana", "progress": 38, "commits": 10, "additions": 230, "deletions": 80, "activity_score": 31}
+            {
+                "name": member,
+                "commits": random.randint(10, 80),
+                "additions": random.randint(200, 1500),
+                "deletions": random.randint(50, 500),
+                "activity_score": random.randint(50, 100)
+            }
+            for member in team["members"]
         ],
         "timeline": [
-            {"date": "2024-01-01", "commits": 5},
-            {"date": "2024-01-02", "commits": 8},
-            {"date": "2024-01-03", "commits": 12},
-        ],
-        "file_types": [
-            {"type": "py", "count": 24},
-            {"type": "js", "count": 18},
-            {"type": "md", "count": 8},
-            {"type": "json", "count": 6}
+            {
+                "date": (datetime.now().replace(day=d)).isoformat().split('T')[0],
+                "commits": random.randint(2, 20)
+            }
+            for d in range(1, 31)
         ]
     }
 
+# Task endpoints (Kanban)
+@app.get("/api/tasks")
+async def get_tasks(team_id: Optional[str] = None):
+    """Get all tasks, optionally filtered by team"""
+    if team_id:
+        return [task for task in tasks_db if task.get("team_id") == team_id]
+    return tasks_db
+
+@app.post("/api/tasks")
+async def create_task(task: dict):
+    """Create new task"""
+    task["id"] = f"task_{len(tasks_db) + 1}"
+    task["created_at"] = datetime.now().isoformat()
+    tasks_db.append(task)
+    return task
+
+@app.put("/api/tasks/{task_id}")
+async def update_task(task_id: str, task_update: dict):
+    """Update task status"""
+    for task in tasks_db:
+        if task.get("id") == task_id:
+            task.update(task_update)
+            return task
+    raise HTTPException(status_code=404, detail="Task not found")
+
+# Calendar endpoints
+@app.get("/api/events")
+async def get_events(team_id: Optional[str] = None):
+    """Get calendar events"""
+    if team_id:
+        return [event for event in calendar_events_db if event.get("team_id") == team_id]
+    return calendar_events_db
+
+@app.post("/api/events")
+async def create_event(event: dict):
+    """Create calendar event"""
+    event["id"] = f"event_{len(calendar_events_db) + 1}"
+    calendar_events_db.append(event)
+    return event
+
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run("main:app", host="127.0.0.1", port=8000, reload=True)
-    
-@app.get("/api/teams/{team_id}/commits")
-async def get_team_commits(team_id: str, repo_url: str = None):
-    """Get real commit data for a team - FAST"""
-    # For demo, use repo_url parameter or get from your DB
-    if not repo_url:
-        # Demo repos for quick testing
-        demo_repos = {
-            "1": "https://github.com/facebook/react",
-            "2": "https://github.com/vercel/next.js",
-            "3": "https://github.com/tailwindlabs/tailwindcss"
-        }
-        repo_url = demo_repos.get(team_id, "https://github.com/facebook/react")
-    
-    try:
-        analyzer = GitAnalyzer(repo_url)
-        data = analyzer.get_team_stats()
-        analyzer.cleanup()
-        return data
-    except Exception as e:
-        # Return mock data if analysis fails
-        return {
-            'summary': {
-                'total_commits': 142,
-                'total_contributors': 4,
-                'total_additions': 2580,
-                'total_deletions': 650,
-                'active_days': 22
-            },
-            'contributors': [
-                {'name': 'Alice', 'commits': 65, 'additions': 1240, 'deletions': 320, 'activity_score': 98},
-                {'name': 'Bob', 'commits': 42, 'additions': 890, 'deletions': 210, 'activity_score': 76},
-                {'name': 'Charlie', 'commits': 25, 'additions': 450, 'deletions': 120, 'activity_score': 52}
-            ],
-            'timeline': [
-                {'date': '2024-03-01', 'commits': 12},
-                {'date': '2024-03-02', 'commits': 8},
-                {'date': '2024-03-03', 'commits': 15}
-            ]
-        }
+    uvicorn.run(app, host="0.0.0.0", port=8000, reload=True)
